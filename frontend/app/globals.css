@@ -2,7 +2,7 @@
 
 /* Reset and Base */
 :root {
-  --font-geist-sans: "Geist", sans-serif; /* Fallback font */
+  --font-geist-sans: "Geist", sans-serif;
   --primary-color: #00796b;
   --secondary-color: #0097a7;
   --text-dark: #333;
@@ -11,6 +11,7 @@
   --bg-accent: #e0f7fa;
   --card-bg: #ffffff;
   --success-color: #2e7d32;
+  --border-color: #e0e0e0; 
 }
 
 body {
@@ -25,7 +26,6 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  /* CHANGED: Slightly less padding on the smallest screens */
   padding: 1rem;
   box-sizing: border-box;
 }
@@ -37,7 +37,6 @@ body {
 
 .header h1 {
   color: var(--primary-color);
-  /* CHANGED: Adjusted clamp for better mobile font sizing */
   font-size: clamp(1.5rem, 5vw, 2.25rem);
   margin-bottom: 8px;
 }
@@ -61,7 +60,7 @@ body {
 /* Desktop layout */
 @media (min-width: 900px) {
   .container {
-    padding: 24px; /* Restore larger padding for desktops */
+    padding: 24px;
   }
   .main-content {
     flex-direction: row;
@@ -80,7 +79,7 @@ body {
 .left-panel, .right-panel {
   background: var(--card-bg);
   border-radius: 16px;
-  padding: clamp(1rem, 3vw, 1.5rem); /* Responsive padding */
+  padding: clamp(1rem, 3vw, 1.5rem);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
@@ -105,7 +104,6 @@ body {
 
 .controls-area {
   display: flex;
-  /* CHANGED: Allow buttons to wrap and center them on mobile */
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
@@ -118,12 +116,6 @@ body {
   justify-content: center;
 }
 
-.settings-control {
-    /* On mobile, let it be part of the flex wrap flow */
-    /* On desktop, it will be positioned by its parent */
-}
-
-/* On larger screens, push the settings button to the side */
 @media (min-width: 480px) {
     .controls-area {
         flex-wrap: nowrap;
@@ -144,7 +136,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  white-space: nowrap; /* Prevent buttons from breaking into two lines */
+  white-space: nowrap;
 }
 
 .start-button {
@@ -181,7 +173,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -197,47 +189,109 @@ body {
   font-size: 0.9rem;
 }
 
-.camera-source-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* --- Custom Dropdown Component Styles --- */
+
+.custom-select-container {
+  position: relative;
 }
 
-.camera-option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border: 2px solid #ddd;
+.custom-select-button {
+  width: 100%;
+  padding: 12px 16px 12px 48px; /* Make space for icon */
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--text-dark);
+  background-color: #fff;
+  border: 1px solid #ccc;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  position: relative;
 }
 
-.camera-option:hover {
-  background-color: #f0f2f5;
-  border-color: #ccc;
-}
-
-.camera-option.selected {
+.custom-select-button:hover {
   border-color: var(--primary-color);
-  background-color: #e0f7fa;
-  box-shadow: 0 0 5px rgba(0, 121, 107, 0.3);
 }
 
-.camera-option input[type="radio"] {
+.custom-select-button .select-icon {
   position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
+  left: 12px;
+  font-size: 1.2rem;
+  color: var(--text-light);
 }
 
-.camera-icon {
-  font-size: 1.25rem;
+/* Custom dropdown arrow */
+.custom-select-button::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  width: 1.25em;
+  height: 1.25em;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
-.camera-name {
+.custom-select-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  list-style: none;
+  margin: 0;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  
+  transform-origin: top;
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scaleY(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.custom-select-option {
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
   font-weight: 500;
+  position: relative;
+  padding-right: 30px; /* Make space for checkmark */
+}
+
+.custom-select-option:hover {
+  background-color: #f0f2f5;
+}
+
+.custom-select-option.selected {
+  background-color: #e0f7fa;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Checkmark for the selected option */
+.custom-select-option.selected::after {
+  content: '✓';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .toggle-button {
@@ -252,12 +306,26 @@ body {
 }
 
 
+/* --- Emotion Display Panel Styles --- */
 .emotion-display {
   text-align: center;
-  min-height: 250px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  padding-bottom: 24px;
+}
+
+.vocal-emotion-section {
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.vocal-emotion-section .emotion-info { gap: 8px; }
+.vocal-emotion-section .emoji { font-size: 2.5rem; }
+.vocal-emotion-section .emotion-text { font-size: clamp(1.25rem, 5vw, 1.5rem); }
+
+.emotion-display h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--primary-color);
+  font-weight: 600;
 }
 
 .emotion-info {
@@ -265,6 +333,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  min-height: 100px;
 }
 
 .emoji {
@@ -273,7 +342,7 @@ body {
 }
 
 .emotion-text {
-  font-size: clamp(1.75rem, 6vw, 2.25rem); /* Responsive emotion text */
+  font-size: clamp(1.75rem, 6vw, 2.25rem);
   font-weight: bold;
   color: var(--success-color);
 }
@@ -281,7 +350,7 @@ body {
 .history-section {
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color);
 }
 
 .history-section h3 {
@@ -343,12 +412,16 @@ body {
 }
 .placeholder-text {
   color: var(--text-light);
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .footer {
   margin-top: 40px;
   padding-top: 20px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-color);
   text-align: center;
   color: #607d8b;
 }

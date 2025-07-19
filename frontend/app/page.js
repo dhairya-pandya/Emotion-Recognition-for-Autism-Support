@@ -3,101 +3,170 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 
-// The rest of your component code remains the same...
+const emotionData = {
+  happy: { emoji: "😊", explanation: "A smile and raised cheeks usually mean someone is happy." },
+  sad: { emoji: "😢", explanation: "Downturned lips and raised inner eyebrows can show sadness." },
+  surprise: { emoji: "😲", explanation: "Wide eyes and an open mouth often signal surprise." },
+  neutral: { emoji: "😐", explanation: "A relaxed face with no strong expression is typically neutral." },
+  angry: { emoji: "😠", explanation: "Lowered eyebrows and tense lips can indicate anger." },
+  fear: { emoji: "😨", explanation: "Raised eyebrows and a slightly open mouth can show fear." },
+  disgust: { emoji: "🤢", explanation: "A wrinkled nose and raised upper lip often express disgust." },
+};
 
 export default function HomePage() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  
+  const cameraSelectRef = useRef(null);
+  const audioSelectRef = useRef(null);
+
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const [emotion, setEmotion] = useState("");
+  const [facialEmotion, setFacialEmotion] = useState("");
+  const [speechEmotion, setSpeechEmotion] = useState("");
   const [emotionHistory, setEmotionHistory] = useState([]);
   const [error, setError] = useState("");
   const [stream, setStream] = useState(null);
+  
   const [devices, setDevices] = useState([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
+  
+  const [audioDevices, setAudioDevices] = useState([]);
+  const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState("");
+
+  const [isCameraMenuOpen, setCameraMenuOpen] = useState(false);
+  const [isAudioMenuOpen, setAudioMenuOpen] = useState(false);
+
   const [isMirrored, setIsMirrored] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cameraSelectRef.current && !cameraSelectRef.current.contains(event.target)) {
+        setCameraMenuOpen(false);
+      }
+      if (audioSelectRef.current && !audioSelectRef.current.contains(event.target)) {
+        setAudioMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const updateDeviceList = () => {
     navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
-      const videoDevices = deviceInfos.filter(
-        (device) => device.kind === "videoinput"
-      );
+      const videoDevices = deviceInfos.filter((device) => device.kind === "videoinput");
+      const audioInputDevices = deviceInfos.filter((device) => device.kind === "audioinput");
+      
       setDevices(videoDevices);
-      if (videoDevices.length > 0) {
+      setAudioDevices(audioInputDevices);
+
+      if (!selectedDeviceId && videoDevices.length > 0) {
         setSelectedDeviceId(videoDevices[0].deviceId);
       }
+      if (!selectedAudioDeviceId && audioInputDevices.length > 0) {
+        setSelectedAudioDeviceId(audioInputDevices[0].deviceId);
+      }
     });
+  };
+
+  useEffect(() => {
+    updateDeviceList();
   }, []);
 
   useEffect(() => {
-    if (!isCameraOn || !videoRef.current) return;
+    if (!isCameraOn) return;
+    const analysisInterval = setInterval(() => {
+      analyzeFacialEmotion();
+      analyzeVocalEmotion();
+    }, 5000);
+    return () => clearInterval(analysisInterval);
+  }, [isCameraOn]);
 
+  const analyzeFacialEmotion = () => {
+    if (!videoRef.current || !canvasRef.current) return;
     const canvas = canvasRef.current;
     const video = videoRef.current;
     const context = canvas.getContext('2d', { willReadFrequently: true });
+    
+    if (video.readyState < 2) return;
 
-    const intervalId = setInterval(() => {
-      if (video.readyState < 2) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const formData = new FormData();
+      formData.append('image', blob, 'webcam-frame.jpg');
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
+      try {
+        const response = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
+        if (!response.ok) throw new Error('Facial API Error');
+        const data = await response.json();
+        const detectedEmotion = data.emotion;
+        
+        setFacialEmotion(detectedEmotion);
+        setEmotionHistory((prev) => [detectedEmotion, ...prev].slice(0, 5));
+      } catch (e) {
+        console.error("Facial analysis error:", e);
+      }
+    }, 'image/jpeg');
+  };
 
+  const analyzeVocalEmotion = () => {
+    if (!stream) return;
+    try {
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         const formData = new FormData();
-        formData.append('image', blob, 'webcam-frame.jpg');
+        formData.append('audio', audioBlob, 'speech.wav');
 
         try {
-          const response = await fetch('http://127.0.0.1:5000/predict', {
-            method: 'POST',
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error(`API Error: ${response.statusText}`);
-          }
-
+          const response = await fetch('http://127.0.0.1:5001/predict_speech', { method: 'POST', body: formData });
+          if (!response.ok) throw new Error('Speech API Error');
           const data = await response.json();
-          const detectedEmotion = data.emotion;
-
-          setEmotion(detectedEmotion);
-          setEmotionHistory((prevHistory) => {
-            if (prevHistory[0]?.emotion !== detectedEmotion) {
-              const newEntry = { emotion: detectedEmotion, timestamp: Date.now() };
-              return [newEntry, ...prevHistory].slice(0, 5);
-            }
-            return prevHistory;
-          });
-
-        } catch (apiError) {
-          console.error("Error predicting emotion:", apiError);
-          setError("Could not connect to the AI model.");
+          setSpeechEmotion(data.emotion);
+        } catch (e) {
+          console.error("Speech analysis error:", e);
         }
-      }, 'image/jpeg');
-    }, 2000);
+      };
 
-    return () => clearInterval(intervalId);
-  }, [isCameraOn]);
+      mediaRecorderRef.current.start();
+      setTimeout(() => {
+        if(mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+            mediaRecorderRef.current.stop();
+        }
+      }, 4800);
 
-  const startCamera = async (deviceId = selectedDeviceId) => {
-    setError("");
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
+    } catch(e) {
+      console.error("MediaRecorder setup failed:", e);
     }
+  };
+  
+  const startCamera = async (videoDeviceId = selectedDeviceId, audioDeviceId = selectedAudioDeviceId) => {
+    setError("");
+    if (stream) stream.getTracks().forEach((track) => track.stop());
+
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: deviceId ? { deviceId: { exact: deviceId } } : true,
+        video: { deviceId: videoDeviceId ? { exact: videoDeviceId } : undefined },
+        audio: { deviceId: audioDeviceId ? { exact: audioDeviceId } : undefined },
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
+      if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setStream(mediaStream);
       setIsCameraOn(true);
+      updateDeviceList();
     } catch (err) {
-      console.error("Error starting camera:", err);
+      console.error("Error starting media:", err);
       if (err.name === "NotAllowedError") {
         setError("Camera access was denied. Please check browser permissions.");
       } else if (err.name === "NotFoundError") {
@@ -110,37 +179,45 @@ export default function HomePage() {
       setIsCameraOn(false);
     }
   };
-  
+
   const stopCamera = () => {
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
     setIsCameraOn(false);
     setStream(null);
-    setEmotion("");
+    setFacialEmotion("");
+    setSpeechEmotion("");
     setEmotionHistory([]);
   };
+  
   const toggleMirror = () => setIsMirrored((prev) => !prev);
-  const handleDeviceChange = (e) => {
-    const deviceId = e.target.value;
-    setSelectedDeviceId(deviceId);
+
+  const handleDeviceChange = (newVideoDeviceId) => {
+    setSelectedDeviceId(newVideoDeviceId);
     if (isCameraOn) {
-      startCamera(deviceId);
+      startCamera(newVideoDeviceId, selectedAudioDeviceId);
     }
+    setCameraMenuOpen(false);
   };
 
-  // CHANGED: Added an entry for "surprise" to match the backend's output
-  const emotionData = {
-    happy: { emoji: "😊", explanation: "A smile and raised cheeks usually mean someone is happy." },
-    sad: { emoji: "😢", explanation: "Downturned lips and raised inner eyebrows can show sadness." },
-    surprise: { emoji: "😲", explanation: "Wide eyes and an open mouth often signal surprise." },
-    neutral: { emoji: "😐", explanation: "A relaxed face with no strong expression is typically neutral." },
-    angry: { emoji: "😠", explanation: "Lowered eyebrows and tense lips can indicate anger." },
-    fear: { emoji: "😨", explanation: "Raised eyebrows and a slightly open mouth can show fear." },
-    disgust: { emoji: "🤢", explanation: "A wrinkled nose and raised upper lip often express disgust." },
+  const handleAudioDeviceChange = (newAudioDeviceId) => {
+    setSelectedAudioDeviceId(newAudioDeviceId);
+    if (isCameraOn) {
+      startCamera(selectedDeviceId, newAudioDeviceId);
+    }
+    setAudioMenuOpen(false);
+  };
+  
+  const getSelectedDeviceLabel = (devices, id, type) => {
+    const device = devices.find(d => d.deviceId === id);
+    if (device && device.label) return device.label;
+    if (devices.length > 0) return `${type} 1`;
+    return `No ${type} found`;
   };
 
-  const currentEmotionData = emotionData[emotion];
+  const currentFacialEmotionData = emotionData[facialEmotion];
+  const currentSpeechEmotionData = emotionData[speechEmotion];
 
   return (
     <div className="container">
@@ -188,22 +265,42 @@ export default function HomePage() {
               <div className="settings-menu">
                 <div className="settings-item">
                   <label>Camera Source</label>
-                  <div className="camera-source-list">
-                    {devices.map((device) => (
-                      <label key={device.deviceId} className={`camera-option ${selectedDeviceId === device.deviceId ? 'selected' : ''}`}>
-                        <input
-                          type="radio"
-                          name="camera-source"
-                          value={device.deviceId}
-                          checked={selectedDeviceId === device.deviceId}
-                          onChange={handleDeviceChange}
-                        />
-                        <span className="camera-icon">📷</span>
-                        <span className="camera-name">{device.label || `Camera ${device.deviceId.slice(0, 8)}`}</span>
-                      </label>
-                    ))}
+                  <div className="custom-select-container" ref={cameraSelectRef}>
+                    <button className="custom-select-button" onClick={() => setCameraMenuOpen(prev => !prev)}>
+                      <span className="select-icon">📷</span>
+                      <span>{getSelectedDeviceLabel(devices, selectedDeviceId, 'Camera')}</span>
+                    </button>
+                    {isCameraMenuOpen && (
+                      <ul className="custom-select-menu">
+                        {devices.map((device) => (
+                          <li key={device.deviceId} className={`custom-select-option ${selectedDeviceId === device.deviceId ? 'selected' : ''}`} onClick={() => handleDeviceChange(device.deviceId)}>
+                            {device.label || `Camera ${device.deviceId.slice(0, 8)}`}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </div>
+
+                <div className="settings-item">
+                  <label>Microphone Source</label>
+                   <div className="custom-select-container" ref={audioSelectRef}>
+                    <button className="custom-select-button" onClick={() => setAudioMenuOpen(prev => !prev)}>
+                      <span className="select-icon">🎤</span>
+                      <span>{getSelectedDeviceLabel(audioDevices, selectedAudioDeviceId, 'Microphone')}</span>
+                    </button>
+                    {isAudioMenuOpen && (
+                      <ul className="custom-select-menu">
+                        {audioDevices.map((device) => (
+                          <li key={device.deviceId} className={`custom-select-option ${selectedAudioDeviceId === device.deviceId ? 'selected' : ''}`} onClick={() => handleAudioDeviceChange(device.deviceId)}>
+                            {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+                
                 <div className="settings-item">
                   <label>Mirror Video:</label>
                   <button onClick={toggleMirror} className="toggle-button">
@@ -217,29 +314,35 @@ export default function HomePage() {
 
         <div className="right-panel">
           <section className="emotion-display">
-            <h2>Detected Emotion</h2>
-            {isCameraOn && currentEmotionData ? (
+            <h2>Facial Emotion</h2>
+            {isCameraOn && currentFacialEmotionData ? (
               <div className="emotion-info">
-                <span className="emoji">{currentEmotionData.emoji}</span>
-                <span className="emotion-text">{emotion.charAt(0).toUpperCase() + emotion.slice(1)}</span>
-                <p className="explanation">{currentEmotionData.explanation}</p>
+                <span className="emoji">{currentFacialEmotionData.emoji}</span>
+                <span className="emotion-text">{facialEmotion.charAt(0).toUpperCase() + facialEmotion.slice(1)}</span>
+                <p className="explanation">{currentFacialEmotionData.explanation}</p>
               </div>
-            ) : (
-              <p className="placeholder-text">
-                {isCameraOn ? "Detecting..." : "Start the camera to begin."}
-              </p>
-            )}
+            ) : ( <p className="placeholder-text">{isCameraOn ? "Detecting..." : "Start camera"}</p> )}
+          </section>
+
+          <section className="emotion-display vocal-emotion-section">
+            <h2>Vocal Emotion</h2>
+            {isCameraOn && currentSpeechEmotionData ? (
+              <div className="emotion-info">
+                <span className="emoji">{currentSpeechEmotionData.emoji}</span>
+                <span className="emotion-text">{speechEmotion.charAt(0).toUpperCase() + speechEmotion.slice(1)}</span>
+              </div>
+            ) : ( <p className="placeholder-text">{isCameraOn ? "Listening..." : "Start camera"}</p> )}
           </section>
 
           <section className="history-section">
-            <h3>Recent History</h3>
+            <h3>Facial Emotion History</h3>
             {emotionHistory.length > 0 ? (
               <ul className="history-list">
-                {emotionHistory.map((item) => (
-                  <li key={item.timestamp} className="history-item">
-                    <span className="emoji-small">{emotionData[item.emotion]?.emoji}</span>
-                    <span>{item.emotion.charAt(0).toUpperCase() + item.emotion.slice(1)}</span>
-                  </li>
+                {emotionHistory.map((item, index) => (
+                    <li key={`${item}-${index}`} className="history-item">
+                        <span className="emoji-small">{emotionData[item]?.emoji}</span>
+                        <span>{item.charAt(0).toUpperCase() + item.slice(1)}</span>
+                    </li>
                 ))}
               </ul>
             ) : (
