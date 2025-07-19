@@ -1,0 +1,11 @@
+torch==2.7.1
+torchvision==0.18.1
+tqdm
+opencv-python
+numpy
+scikit-learn
+matplotlib
+pandas
+albumentations
+einops
+resnest==0.0.6
