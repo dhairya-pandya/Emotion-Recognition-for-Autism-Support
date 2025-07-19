@@ -1,11 +1,8 @@
-torch==2.7.1
-torchvision==0.18.1
-tqdm
-opencv-python
-numpy
-scikit-learn
-matplotlib
-pandas
-albumentations
-einops
-resnest==0.0.6
+# This file lists the required Python packages for the emotion detection application.
+# Install them using the command: pip install -r requirements.txt
+
+Flask==3.0.3
+Flask-Cors==4.0.1
+deepface==0.0.92
+opencv-python==4.9.0.80
+numpy==1.26.4
