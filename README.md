@@ -87,6 +87,11 @@ Follow these instructions to set up and run the project on your local machine.
    git clone https://github.com/dp2426/Emotion-Recognition-for-Autism-Support.git
    cd Emotion-Recognition-for-Autism-Support
 
+2. Download the requirements
+   - Download specific versioned libraries and dependencies for our project (run in terminal):
+     ```
+     pip install -r requirements.txt
+     ```
 ### Running the Application
 
 You need to run THREE separate servers in three separate terminals.
