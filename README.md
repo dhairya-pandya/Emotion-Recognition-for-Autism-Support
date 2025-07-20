@@ -86,11 +86,6 @@ Follow these instructions to set up and run the project on your local machine.
    (run in terminal) git clone <your-repository-url>
    (run in terminal) cd <your-project-directory>
 
-2. Setup the Python Backend:
-   (run in terminal) python -m venv .venv
-   (run in terminal) source .venv/bin/activate  (On Windows, use: .venv\Scripts\activate)
-   (run in terminal) pip install -r requirements.txt
-
 ### Running the Application
 
 You need to run THREE separate servers in three separate terminals.
