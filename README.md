@@ -63,7 +63,7 @@ TECHNOLOGY STACK
 ----------------
 
 - Frontend: Next.js, React
-- Backends: Python, Flask, Gunicorn
+- Backends: Python, Flask
 - AI Models: DeepFace (Facial), Hugging Face Transformers & SpeechRecognition (Vocal)
 - Deployment: Render / Hugging Face Spaces (Backends), Vercel / Netlify (Frontend)
 
@@ -82,25 +82,32 @@ Follow these instructions to set up and run the project on your local machine.
 
 ### Installation
 
-1. Clone the repository:
-   (run in terminal) git clone <your-repository-url>
-   (run in terminal) cd <your-project-directory>
+1. Clone the repository (run in terminal):
+   ```
+   git clone https://github.com/dp2426/Emotion-Recognition-for-Autism-Support.git
+   cd Emotion-Recognition-for-Autism-Support
 
 ### Running the Application
 
 You need to run THREE separate servers in three separate terminals.
 
 1. Start the Facial Emotion Backend:
-   - From the project's ROOT directory, run:
-     (run in terminal) python deepface_api.py
+   - Navigate to the `backend` directory and run (run in terminal):
+     ```
+     python deepface_api.py
+     ```
 
 2. Start the Speech Emotion Backend:
-   - Open a NEW terminal. From the project's ROOT directory, run:
-     (run in terminal) python speech_api.py
+   - Open a NEW terminal, Navigate to the `speech_emotion_model` directory and run (run in terminal):
+     ```
+     python speech_api.py
+     ```
 
 3. Start the Frontend:
-   - Open a THIRD terminal. Navigate to the `frontend` directory and run:
-     (run in terminal) npm run dev
+   - Open a THIRD terminal. Navigate to the `frontend` directory and run (run in terminal):
+     ```
+     npm run dev
+     ```
 
 4. Open the App:
    - Open your web browser and go to http://localhost:3000
