@@ -76,7 +76,7 @@ Follow these instructions to set up and run the project on your local machine.
 ### Prerequisites
 
 - Node.js (v18 or later)
-- Python (v3.10 or v3.11 recommended) & pip
+- **Python (v3.10 or v3.11 recommended) & pip (WARNING : may not work on other versions)**
 - Git
 - FFmpeg: A required dependency for the backend audio processing.
 
