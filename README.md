@@ -1,7 +1,7 @@
 REAL-TIME DUAL EMOTION RECOGNITION APP
 ======================================
 
-This is a full-stack web application designed to help autistic individuals learn and recognize human emotions. It provides real-time analysis of both FACIAL EXPRESSIONS from a webcam and VOCAL TONE from a microphone, displaying the detected emotions in a simple and clear user interface.
+This is a web application designed to help autistic individuals learn and recognize human emotions. It provides real-time analysis of both FACIAL EXPRESSIONS from a webcam and VOCAL TONE from a microphone, displaying the detected emotions in a simple and clear user interface.
 
 Give this repository a star if you liked it, as it integrates multiple AI models into a full-stack web application.
 
