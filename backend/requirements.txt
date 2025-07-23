@@ -1,15 +1,18 @@
-# This file lists the required Python packages for the emotion detection application.
-# Install them using the command: pip install -r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
 
-# requirements.txt
+# Web & Server
 Flask==3.0.3
 Flask-Cors==4.0.1
 gunicorn==22.0.0
-deepface==0.0.92
-opencv-python==4.9.0.80
-numpy==1.26.4
-SpeechRecognition==3.10.4
-transformers==4.42.3
+
+# AI & Machine Learning
 torch==2.3.1
+transformers==4.42.3
+deepface==0.0.92
+numpy==1.26.4
+opencv-python==4.9.0.80
+
+# Audio Processing
+SpeechRecognition==3.10.4
 pyaudio==0.2.14
 pydub==0.25.1
