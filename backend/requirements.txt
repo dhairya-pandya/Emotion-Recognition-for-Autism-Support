@@ -8,7 +8,6 @@ gunicorn==22.0.0
 # AI & Machine Learning
 torch==2.5.0
 transformers==4.41.2
-tokenizers==0.19.1
 deepface==0.0.92
 numpy==1.26.4
 opencv-python==4.9.0.80
