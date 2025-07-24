@@ -102,7 +102,7 @@ export default function HomePage() {
       formData.append('image', blob, 'webcam-frame.jpg');
 
       try {
-        const response = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_DEEPFACE}/predict`, { method: 'POST', body: formData });
         if (!response.ok) throw new Error('Facial API Error');
         const data = await response.json();
         const detectedEmotion = data.emotion;
@@ -131,7 +131,7 @@ export default function HomePage() {
         formData.append('audio', audioBlob, 'speech.wav');
 
         try {
-          const response = await fetch('http://127.0.0.1:5001/predict_speech', { method: 'POST', body: formData });
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_SPEECH}/predict_speech`, { method: 'POST', body: formData });
           if (!response.ok) throw new Error('Speech API Error');
           const data = await response.json();
           setSpeechEmotion(data.emotion);
