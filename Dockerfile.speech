@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     portaudio19-dev \
     curl \
     libgl1-mesa-glx \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Rust
