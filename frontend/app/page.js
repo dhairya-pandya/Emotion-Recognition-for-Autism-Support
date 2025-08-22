@@ -16,15 +16,15 @@ const emotionData = {
 export default function HomePage() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
+  // const mediaRecorderRef = useRef(null);
+  // const audioChunksRef = useRef([]);
   
   const cameraSelectRef = useRef(null);
-  const audioSelectRef = useRef(null);
+  // const audioSelectRef = useRef(null);
 
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [facialEmotion, setFacialEmotion] = useState("");
-  const [speechEmotion, setSpeechEmotion] = useState("");
+  // const [speechEmotion, setSpeechEmotion] = useState("");
   const [emotionHistory, setEmotionHistory] = useState([]);
   const [error, setError] = useState("");
   const [stream, setStream] = useState(null);
@@ -32,11 +32,11 @@ export default function HomePage() {
   const [devices, setDevices] = useState([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
   
-  const [audioDevices, setAudioDevices] = useState([]);
-  const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState("");
+  // const [audioDevices, setAudioDevices] = useState([]);
+  // const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState("");
 
   const [isCameraMenuOpen, setCameraMenuOpen] = useState(false);
-  const [isAudioMenuOpen, setAudioMenuOpen] = useState(false);
+  // const [isAudioMenuOpen, setAudioMenuOpen] = useState(false);
 
   const [isMirrored, setIsMirrored] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -46,9 +46,9 @@ export default function HomePage() {
       if (cameraSelectRef.current && !cameraSelectRef.current.contains(event.target)) {
         setCameraMenuOpen(false);
       }
-      if (audioSelectRef.current && !audioSelectRef.current.contains(event.target)) {
-        setAudioMenuOpen(false);
-      }
+      // if (audioSelectRef.current && !audioSelectRef.current.contains(event.target)) {
+      //   setAudioMenuOpen(false);
+      // }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -57,17 +57,17 @@ export default function HomePage() {
   const updateDeviceList = () => {
     navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
       const videoDevices = deviceInfos.filter((device) => device.kind === "videoinput");
-      const audioInputDevices = deviceInfos.filter((device) => device.kind === "audioinput");
+      // const audioInputDevices = deviceInfos.filter((device) => device.kind === "audioinput");
       
       setDevices(videoDevices);
-      setAudioDevices(audioInputDevices);
+      // setAudioDevices(audioInputDevices);
 
       if (!selectedDeviceId && videoDevices.length > 0) {
         setSelectedDeviceId(videoDevices[0].deviceId);
       }
-      if (!selectedAudioDeviceId && audioInputDevices.length > 0) {
-        setSelectedAudioDeviceId(audioInputDevices[0].deviceId);
-      }
+      // if (!selectedAudioDeviceId && audioInputDevices.length > 0) {
+      //   setSelectedAudioDeviceId(audioInputDevices[0].deviceId);
+      // }
     });
   };
 
@@ -79,7 +79,7 @@ export default function HomePage() {
     if (!isCameraOn) return;
     const analysisInterval = setInterval(() => {
       analyzeFacialEmotion();
-      analyzeVocalEmotion();
+      // analyzeVocalEmotion();
     }, 5000);
     return () => clearInterval(analysisInterval);
   }, [isCameraOn]);
@@ -115,51 +115,51 @@ export default function HomePage() {
     }, 'image/jpeg');
   };
 
-  const analyzeVocalEmotion = () => {
-    if (!stream) return;
-    try {
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
+  // const analyzeVocalEmotion = () => {
+  //   if (!stream) return;
+  //   try {
+  //     mediaRecorderRef.current = new MediaRecorder(stream);
+  //     audioChunksRef.current = [];
 
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
+  //     mediaRecorderRef.current.ondataavailable = (event) => {
+  //       audioChunksRef.current.push(event.data);
+  //     };
 
-      mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'speech.wav');
+  //     mediaRecorderRef.current.onstop = async () => {
+  //       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+  //       const formData = new FormData();
+  //       formData.append('audio', audioBlob, 'speech.wav');
 
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_SPEECH}/predict_speech`, { method: 'POST', body: formData });
-          if (!response.ok) throw new Error('Speech API Error');
-          const data = await response.json();
-          setSpeechEmotion(data.emotion);
-        } catch (e) {
-          console.error("Speech analysis error:", e);
-        }
-      };
+  //       try {
+  //         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_SPEECH}/predict_speech`, { method: 'POST', body: formData });
+  //         if (!response.ok) throw new Error('Speech API Error');
+  //         const data = await response.json();
+  //         setSpeechEmotion(data.emotion);
+  //       } catch (e) {
+  //         console.error("Speech analysis error:", e);
+  //       }
+  //     };
 
-      mediaRecorderRef.current.start();
-      setTimeout(() => {
-        if(mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-            mediaRecorderRef.current.stop();
-        }
-      }, 4800);
+  //     mediaRecorderRef.current.start();
+  //     setTimeout(() => {
+  //       if(mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+  //           mediaRecorderRef.current.stop();
+  //       }
+  //     }, 4800);
 
-    } catch(e) {
-      console.error("MediaRecorder setup failed:", e);
-    }
-  };
+  //   } catch(e) {
+  //     console.error("MediaRecorder setup failed:", e);
+  //   }
+  // };
   
-  const startCamera = async (videoDeviceId = selectedDeviceId, audioDeviceId = selectedAudioDeviceId) => {
+  const startCamera = async (videoDeviceId = selectedDeviceId) => {
     setError("");
     if (stream) stream.getTracks().forEach((track) => track.stop());
 
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { deviceId: videoDeviceId ? { exact: videoDeviceId } : undefined },
-        audio: { deviceId: audioDeviceId ? { exact: audioDeviceId } : undefined },
+        // audio: { deviceId: audioDeviceId ? { exact: audioDeviceId } : undefined },
       });
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setStream(mediaStream);
@@ -187,7 +187,7 @@ export default function HomePage() {
     setIsCameraOn(false);
     setStream(null);
     setFacialEmotion("");
-    setSpeechEmotion("");
+    // setSpeechEmotion("");
     setEmotionHistory([]);
   };
   
@@ -196,18 +196,18 @@ export default function HomePage() {
   const handleDeviceChange = (newVideoDeviceId) => {
     setSelectedDeviceId(newVideoDeviceId);
     if (isCameraOn) {
-      startCamera(newVideoDeviceId, selectedAudioDeviceId);
+      startCamera(newVideoDeviceId);
     }
     setCameraMenuOpen(false);
   };
 
-  const handleAudioDeviceChange = (newAudioDeviceId) => {
-    setSelectedAudioDeviceId(newAudioDeviceId);
-    if (isCameraOn) {
-      startCamera(selectedDeviceId, newAudioDeviceId);
-    }
-    setAudioMenuOpen(false);
-  };
+  // const handleAudioDeviceChange = (newAudioDeviceId) => {
+  //   setSelectedAudioDeviceId(newAudioDeviceId);
+  //   if (isCameraOn) {
+  //     startCamera(selectedDeviceId, newAudioDeviceId);
+  //   }
+  //   setAudioMenuOpen(false);
+  // };
   
   const getSelectedDeviceLabel = (devices, id, type) => {
     const device = devices.find(d => d.deviceId === id);
@@ -217,7 +217,7 @@ export default function HomePage() {
   };
 
   const currentFacialEmotionData = emotionData[facialEmotion];
-  const currentSpeechEmotionData = emotionData[speechEmotion];
+  // const currentSpeechEmotionData = emotionData[speechEmotion];
 
   return (
     <div className="container">
@@ -282,7 +282,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="settings-item">
+                {/* <div className="settings-item">
                   <label>Microphone Source</label>
                    <div className="custom-select-container" ref={audioSelectRef}>
                     <button className="custom-select-button" onClick={() => setAudioMenuOpen(prev => !prev)}>
@@ -299,7 +299,7 @@ export default function HomePage() {
                       </ul>
                     )}
                   </div>
-                </div>
+                </div> */}
                 
                 <div className="settings-item">
                   <label>Mirror Video:</label>
@@ -324,7 +324,7 @@ export default function HomePage() {
             ) : ( <p className="placeholder-text">{isCameraOn ? "Detecting..." : "Start camera"}</p> )}
           </section>
 
-          <section className="emotion-display vocal-emotion-section">
+          {/* <section className="emotion-display vocal-emotion-section">
             <h2>Vocal Emotion</h2>
             {isCameraOn && currentSpeechEmotionData ? (
               <div className="emotion-info">
@@ -332,7 +332,7 @@ export default function HomePage() {
                 <span className="emotion-text">{speechEmotion.charAt(0).toUpperCase() + speechEmotion.slice(1)}</span>
               </div>
             ) : ( <p className="placeholder-text">{isCameraOn ? "Listening..." : "Start camera"}</p> )}
-          </section>
+          </section> */}
 
           <section className="history-section">
             <h3>Facial Emotion History</h3>

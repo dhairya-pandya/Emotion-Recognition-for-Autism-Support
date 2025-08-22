@@ -1,26 +1,28 @@
-# Dockerfile for the Face Emotion API
-FROM python:3.11-slim
-WORKDIR /app
+# Dockerfile.speech - AUDIO RECOGNITION DISABLED
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    portaudio19-dev \
-    curl \
-    libgl1-mesa-glx \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+# # Dockerfile for the Face Emotion API
+# FROM python:3.11-slim
+# WORKDIR /app
 
-# Install Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
+# # Install system dependencies
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     build-essential \
+#     portaudio19-dev \
+#     curl \
+#     libgl1-mesa-glx \
+#     ffmpeg \
+#     && rm -rf /var/lib/apt/lists/*
 
-# Install Python packages
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# # Install Rust
+# RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# ENV PATH="/root/.cargo/bin:${PATH}"
 
-# Copy application code
-COPY backend/ .
+# # Install Python packages
+# COPY backend/requirements.txt .
+# RUN pip install --no-cache-dir -r requirements.txt
 
-# Command to start THIS server
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "speech_api:app"]
+# # Copy application code
+# COPY backend/ .
+
+# # Command to start THIS server
+# CMD ["gunicorn", "--bind", "0.0.0.0:10000", "speech_api:app"]
