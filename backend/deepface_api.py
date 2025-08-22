@@ -13,7 +13,8 @@ import numpy as np
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app)  # Enable Cross-Origin Resource Sharing
+# Allow requests specifically from your frontend's Render domain
+CORS(app, resources={r"/predict": {"origins": "https://emotion-recognition-for-autism-support.onrender.com"}})  # Enable Cross-Origin Resource Sharing
 
 # --- IMPROVEMENT 1: Pre-load the AI model on startup ---
 try:
