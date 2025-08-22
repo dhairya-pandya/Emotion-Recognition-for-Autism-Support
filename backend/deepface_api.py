@@ -1,5 +1,6 @@
 # deepface_api.py
 
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from deepface import DeepFace
@@ -16,15 +17,13 @@ def analyze_emotion(image_file):
     """
     # Read the image file stream into a numpy array
     filestr = image_file.read()
-    npimg = np.fromstring(filestr, np.uint8)
+    npimg = np.frombuffer(filestr, np.uint8)   # <-- fixed here
     
     # Decode the image array using OpenCV
     img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
 
     try:
         # Use DeepFace to analyze the image
-        # The 'enforce_detection=False' flag allows the model to analyze faces
-        # even if it thinks the detection quality is low.
         result = DeepFace.analyze(img, actions=['emotion'], enforce_detection=False)
         
         # The result is a list, we take the first detected face's result
@@ -34,7 +33,7 @@ def analyze_emotion(image_file):
     except Exception as e:
         # This can happen if DeepFace doesn't detect a face
         print(f"Error during analysis: {e}")
-        return "neutral" # Return a default value if no face is found
+        return "neutral"  # Return a default value if no face is found
 
 
 @app.route('/predict', methods=['POST'])
@@ -57,4 +56,4 @@ def predict():
 
 if __name__ == '__main__':
     print("Starting Flask server for DeepFace API...")
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))  # <-- fixed with import os
